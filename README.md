@@ -1,5 +1,5 @@
 # adaptive_scorer
-Adaptive Scorer (v11.0)
+Adaptive Scorer (Version 1.0)
 
 
 ## Installation

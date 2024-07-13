@@ -2,6 +2,7 @@ from typing import Dict, Tuple
 
 from .interface import AdaptiveScorerInterface
 
+
 class AdaptiveScorer(AdaptiveScorerInterface):
     def create_complete_dict(
         self, property_catalog: Dict[str, str], entity_dict: Dict[str, float]
