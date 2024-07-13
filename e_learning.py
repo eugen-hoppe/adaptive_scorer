@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 
-from adaptive_scorer import AdaptiveScorer
+from src.adaptive_scorer import AdaptiveScorer
 
 
 # E-Learning Platform Example
