@@ -16,7 +16,6 @@ class AdaptiveScorerInterface(ABC):
         entity_dict_2: Dict[str, float],
         lower_bound: float = 0.0,
         upper_bound: float = 1.0,
-        scale_factor: float = 1.0,
     ) -> float:
         pass
 

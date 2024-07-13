@@ -27,7 +27,6 @@ class ELearningPlatform(AdaptiveScorer):
             course_dict_2,
             self.lower_bound,
             self.upper_bound,
-            self.scale_factor,
         )
 
     def compute_course_resource_usage(
@@ -84,6 +83,11 @@ course_score = elearning_platform.compute_course_score(
     complete_course_dict_1, complete_course_dict_2
 )
 print(f"E-Learning Platform Score: {course_score:.2f}%")
+
+
+# Resource Usage
+# ==============
+
 
 learning_parameters = {"topic_1": (0.5, 0.7)}
 current_resources = 50.0

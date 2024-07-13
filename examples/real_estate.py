@@ -26,7 +26,6 @@ class RealEstatePlatform(AdaptiveScorer):
             real_estate_dict_2,
             self.lower_bound,
             self.upper_bound,
-            self.scale_factor,
         )
 
     def compute_real_estate_resource_usage(
@@ -84,6 +83,11 @@ real_estate_score = real_estate_platform.compute_real_estate_score(
     complete_real_estate_dict_1, complete_real_estate_dict_2
 )
 print(f"Real Estate Platform Score: {real_estate_score:.2f}%")
+
+
+# Resource Usage
+# ==============
+
 
 learning_parameters = {"feature_1": (0.4, 0.7)}
 current_resources = 100.0

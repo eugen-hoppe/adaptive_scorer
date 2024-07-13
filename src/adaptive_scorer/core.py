@@ -2,7 +2,6 @@ from typing import Dict, Tuple
 
 from .interface import AdaptiveScorerInterface
 
-
 class AdaptiveScorer(AdaptiveScorerInterface):
     def create_complete_dict(
         self, property_catalog: Dict[str, str], entity_dict: Dict[str, float]
@@ -17,7 +16,6 @@ class AdaptiveScorer(AdaptiveScorerInterface):
         entity_dict_2: Dict[str, float],
         lower_bound: float = 0.0,
         upper_bound: float = 1.0,
-        scale_factor: float = 1.0,
     ) -> float:
         total_score = 0.0
         property_count = len(entity_dict_1)
