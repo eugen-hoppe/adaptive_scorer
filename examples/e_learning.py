@@ -1,106 +1,66 @@
-from typing import Dict, Tuple
-
 from src.adaptive_scorer import AdaptiveScorer
 
 
-# E-Learning Platform Example
-# ===========================
+allocation_parameters = {
+    "price": (1.0, 0.7),
+    "duration": (1.0, 0.6),
+    "difficulty": (1.0, 0.9),
+    "rating": (1.0, 0.9)
+}
 
+total_rating_capacity = 20.0
 
-class ELearningPlatform(AdaptiveScorer):
+user_preferences = {
+    "price": 0.9,
+    "duration": 0.8,
+    "difficulty": 0.8,
+    "rating": 0.6,
+}
 
-    def __init__(self):
-        self.lower_bound = 0.2
-        self.upper_bound = 0.9
-        self.scale_factor = 5.0
+course_listings = {
+    "Course A": {
+        "price": 1.0,
+        "duration": 0.7,
+        "difficulty": 0.6,
+        "rating": 0.8,
+    },
+    "Course B": {
+        "duration": 0.8,
+        "difficulty": 0.5,
+        "rating": 0.7,
+    },
+    "Course C": {
+        "price": 1.0,
+        "duration": 0.6,
+    }
+}
 
-    def create_course_dict(
-        self, property_catalog: Dict[str, str], course_dict: Dict[str, float]
-    ) -> Dict[str, float]:
-        return super().create_complete_dict(property_catalog, course_dict)
+scorer = AdaptiveScorer()
 
-    def compute_course_score(
-        self, course_dict_1: Dict[str, float], course_dict_2: Dict[str, float]
-    ) -> float:
-        return super().compute_score(
-            course_dict_1,
-            course_dict_2,
-            self.lower_bound,
-            self.upper_bound,
+user_resource_usage = {}
+remaining_capacity = total_rating_capacity
+
+for feature in user_preferences:
+    try:
+        remaining_capacity, adjusted_rating = scorer.compute_resource_allocation(
+            property_id=feature,
+            usage_amount=user_preferences[feature],
+            allocation_parameters=allocation_parameters,
+            is_demand=True,
+            available_resources=remaining_capacity,
+            scale_factor=5  # From 1 to 5 stars
         )
+        user_resource_usage[feature] = user_preferences[feature]
+        print(f"{feature}: {adjusted_rating:.2f}, balance: {remaining_capacity:.2f}")
+    except ValueError as e:
+        print("Insufficient resources! Balance:", remaining_capacity)
+        break
 
-    def compute_course_resource_usage(
-        self,
-        property_id: str,
-        weight: float,
-        learning_parameters: Dict[str, Tuple[float, float]],
-        is_demand: bool,
-        current_resources: float,
-    ) -> Tuple[float, float]:
-        return super().compute_resource_usage(
-            property_id,
-            weight,
-            learning_parameters,
-            is_demand,
-            current_resources,
-            self.scale_factor,
-        )
+course_scores = {}
 
-
-# Example usage
-course_property_catalog = {
-    "topic_1": "Mathematics",
-    "topic_2": "Physics",
-    "topic_3": "Computer Science",
-    "topic_4": "Literature",
-}
-
-course_dict_1 = {
-    "topic_1": 0.6,
-    "topic_3": 0.8,
-}
-
-course_dict_2 = {
-    "topic_1": 0.7,
-    "topic_2": 0.5,
-    "topic_3": 0.6,
-    "topic_4": 0.85,
-}
-
-elearning_platform = ELearningPlatform()
-
-complete_course_dict_1 = elearning_platform.create_course_dict(
-    course_property_catalog, course_dict_1
-)
-complete_course_dict_2 = elearning_platform.create_course_dict(
-    course_property_catalog, course_dict_2
-)
-print("E-Learning Platform Complete Dicts:")
-print(complete_course_dict_1)
-print(complete_course_dict_2)
-
-course_score = elearning_platform.compute_course_score(
-    complete_course_dict_1, complete_course_dict_2
-)
-print(f"E-Learning Platform Score: {course_score:.2f}%")
-
-
-# Resource Usage
-# ==============
-
-
-learning_parameters = {"topic_1": (0.5, 0.7)}
-current_resources = 50.0
-weight = 0.6
-property_id = "topic_1"
-is_demand = True
-
-try:
-    new_resources, cost = elearning_platform.compute_course_resource_usage(
-        property_id, weight, learning_parameters, is_demand, current_resources
+for course_name, features in course_listings.items():
+    course_scores[course_name] = scorer.compute_score(
+        scorer.create_complete_dict(allocation_parameters, user_resource_usage),
+        scorer.create_complete_dict(allocation_parameters, features)
     )
-    print(
-        f"E-Learning Platform - Remaining resources: {new_resources:.2f}, Assigned resource usage: {cost:.2f}"
-    )
-except ValueError as e:
-    print(f"Error: {e}")
+    print(f"{course_name}: {course_scores[course_name]:.2f}%")

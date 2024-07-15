@@ -36,25 +36,22 @@ class AdaptiveScorer(AdaptiveScorerInterface):
         average_score = total_score / property_count
         return average_score * 100
 
-    def compute_resource_usage(
+    def compute_resource_allocation(
         self,
         property_id: str,
-        weight: float,
-        learning_parameters: Dict[str, Tuple[float, float]],
+        usage_amount: float,
+        allocation_parameters: Dict[str, Tuple[float, float]],
         is_demand: bool,
-        current_resources: float,
+        available_resources: float,
         scale_factor: float = 1.0,
     ) -> Tuple[float, float]:
-        learning_param = learning_parameters.get(property_id, (1.0, 1.0))[
-            1 if is_demand else 0
-        ]
 
-        adjusted_weight = weight * scale_factor
+        allocation = allocation_parameters.get(property_id, (1.0, 1.0))[int(is_demand)]
+        adjusted_usage = usage_amount * scale_factor
+        cost = adjusted_usage / allocation
 
-        cost = adjusted_weight / learning_param
+        if cost > available_resources:
+            raise ValueError("Insufficient resources for this usage amount.")
 
-        if cost > current_resources:
-            raise ValueError("Insufficient resources for this weight.")
-
-        new_resources = current_resources - cost
-        return new_resources, cost
+        new_available_resources = available_resources - cost
+        return new_available_resources, cost

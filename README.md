@@ -11,32 +11,92 @@ pip install git+https://github.com/eugen-hoppe/adaptive_scorer.git
 ```
 
 
-## Purpose of Parameters
+## Methods
 
-- **Bounds (`lower_bound`, `upper_bound`)**: These parameters define the range within which the property weights are adjusted. They ensure that the weights are scaled appropriately to provide accurate and meaningful scores.
-- **Learning Parameters (`learning_parameters`)**: These parameters are tuples that influence the calculation of resource usage. They help in determining how the weight of a property affects the consumption of resources.
-- **Scale Factor (`scale_factor`)**: This factor is used to adjust the weights during the computation of resource usage. It ensures that the weights are scaled to a meaningful range for the specific application.
-- **Resource Usage (`compute_resource_usage`)**: This function calculates the amount of resources required for a given property weight. It helps in managing and optimizing the allocation of resources based on the specified parameters.
+### `compute_resource_allocation`
 
+The `compute_resource_allocation` method in the `AdaptiveScorer` class calculates the allocation of resources based on provided parameters and available resource capacity. This method can be used in various scenarios to manage the consumption or allocation of limited resources.
 
-## Examples
-
-### E-Learning Platform Example
-
-```bash
-python examples/e_learning.py
+```python
+def compute_resource_allocation(
+    self,
+    property_id: str,
+    usage_amount: float,
+    allocation_parameters: Dict[str, Tuple[float, float]],
+    is_demand: bool,
+    available_resources: float,
+    scale_factor: float = 1.0,
+) -> Tuple[float, float]:
 ```
 
-**Description of Example and Significance of the Algorithm**
+#### Parameters
 
-The `AdaptiveScorer` library enables the e-learning platform to match courses and learning preferences. By comparing specific properties such as Mathematics, Physics, Computer Science, and Literature, the library calculates the alignment between course offerings and individual student preferences. This enhances the learning experience by helping students find the courses that best suit their needs. Additionally, the library can calculate resource usage, such as the time required or the effort needed for a course. Through this flexible and adaptable method, the e-learning platform optimizes matching and improves the efficiency of the learning process.
+- **`property_id` (str)**: The ID of the resource or feature being allocated or consumed.
+- **`usage_amount` (float)**: The amount of the resource or rating being used.
+- **`allocation_parameters` (Dict[str, Tuple[float, float]])**: A dictionary containing parameters that affect the allocation. The values are tuples containing two factors: one for demand and one for supply.
+- **`is_demand` (bool)**: A boolean indicating whether it is a demand (True) or a supply (False).
+- **`available_resources` (float)**: The available amount of resources or capacity that can be allocated.
+- **`scale_factor` (float)**: An optional scaling factor to adjust the resource usage amount. Default value is 1.0.
 
-### Real Estate Platform Example
+#### Return Value
 
-```bash
-python examples/real_estate.py
+- **Tuple[float, float]**: A tuple containing the remaining resources and the adjusted resource usage.
+
+#### Functionality
+
+**Determine the Allocation Factor**: The method reads the appropriate allocation factor (either for demand or supply) from the `allocation_parameters` dictionary based on the `property_id` and the value of `is_demand`.
+
+**Adjust the Usage**: The `usage_amount` is multiplied by the `scale_factor` to calculate the adjusted usage.
+
+**Calculate the Cost**: The adjusted usage is divided by the allocation factor to calculate the cost of the resource usage.
+
+**Check Available Resources**: The method checks if the calculated cost exceeds the available resources. If so, it raises a `ValueError`.
+
+**Calculate New Available Resources**: The method calculates the new available resources by subtracting the cost from the original available resources.
+
+**Return**: The method returns a tuple containing the new available resources and the cost.
+
+#### Example Code
+
+Here is an example of using the `compute_resource_allocation` method:
+
+```python
+from src.adaptive_scorer import AdaptiveScorer
+
+# Example parameters
+allocation_parameters = {
+    "price": (1.0, 0.8),
+    "duration": (1.0, 0.7),
+    "difficulty": (1.0, 0.6),
+    "rating": (1.0, 0.9)
+}
+
+total_rating_capacity = 50.0
+user_preference = {
+    "price": 0.5,
+    "duration": 0.6,
+    "difficulty": 0.7,
+    "rating": 0.8
+}
+
+scorer = AdaptiveScorer()
+
+remaining_capacity = total_rating_capacity
+adjusted_ratings = {}
+
+for feature, preference in user_preference.items():
+    try:
+        remaining_capacity, adjusted_rating = scorer.compute_resource_allocation(
+            property_id=feature,
+            usage_amount=preference,
+            allocation_parameters=allocation_parameters,
+            is_demand=True,
+            available_resources=remaining_capacity,
+            scale_factor=10
+        )
+        adjusted_ratings[feature] = adjusted_rating
+        print(f"{feature}: {adjusted_rating:.2f}, Remaining Capacity: {remaining_capacity:.2f}")
+    except ValueError as e:
+        print(f"Error in rating {feature}: {e}")
+        break
 ```
-
-**Description of Example and Significance of the Algorithm**
-
-The `AdaptiveScorer` library allows the real estate platform to match property characteristics with buyer preferences. By comparing specific features such as location, size, price, and condition, the library evaluates the alignment between available properties and the preferences of prospective buyers. This results in better recommendations and an improved user experience, as buyers can find properties that best meet their needs. Additionally, the library can calculate resource usage, such as the time or effort required for a viewing. Through this flexible and adaptable method, the real estate platform optimizes matching and enhances the efficiency of the property transaction process.

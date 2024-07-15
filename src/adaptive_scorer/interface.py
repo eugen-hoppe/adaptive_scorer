@@ -20,13 +20,13 @@ class AdaptiveScorerInterface(ABC):
         pass
 
     @abstractmethod
-    def compute_resource_usage(
+    def compute_resource_allocation(
         self,
         property_id: str,
-        weight: float,
-        learning_parameters: Dict[str, Tuple[float, float]],
+        usage_amount: float,
+        allocation_parameters: Dict[str, Tuple[float, float]],
         is_demand: bool,
-        current_resources: float,
+        available_resources: float,
         scale_factor: float = 1.0,
     ) -> Tuple[float, float]:
         pass

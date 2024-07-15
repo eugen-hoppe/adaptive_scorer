@@ -1,106 +1,78 @@
-from typing import Dict, Tuple
-
 from src.adaptive_scorer import AdaptiveScorer
 
 
-# Real Estate Platform Example
-# ============================
+allocation_parameters = {
+    "price": (1.0, 0.8),
+    "location": (1.0, 0.7),
+    "size": (1.0, 0.6),
+    "rooms": (1.0, 0.5),
+    "age": (1.0, 0.4)
+}
+
+total_rating_capacity = 20.0
 
 
-class RealEstatePlatform(AdaptiveScorer):
-    def __init__(self):
-        self.lower_bound = 0.05
-        self.upper_bound = 0.95
-        self.scale_factor = 50.0
+user_preferences = {
+    "price": 0.4,
+    "location": 0.3,
+    "size": 0.5,
+    "rooms": 0.2,
+    "age": 0.9
+}
 
-    def create_real_estate_dict(
-        self, property_catalog: Dict[str, str], real_estate_dict: Dict[str, float]
-    ) -> Dict[str, float]:
-        return super().create_complete_dict(property_catalog, real_estate_dict)
+property_listings = {
+    "Property A": {
+        "price": 0.4,
+        "location": 0.7,
+        "size": 0.6,
+        "rooms": 0.3,
+        "age": 0.2
+    },
+    "Property B": {
+        "price": 0.6,
+        "location": 0.8,
+        "size": 0.7,
+    },
+    "Property C": {
+        "price": 0.2,
+        "location": 0.6,
+        "rooms": 0.6,
+        "age": 0.9
+    }
+}
 
-    def compute_real_estate_score(
-        self, real_estate_dict_1: Dict[str, float], real_estate_dict_2: Dict[str, float]
-    ) -> float:
-        return super().compute_score(
-            real_estate_dict_1,
-            real_estate_dict_2,
-            self.lower_bound,
-            self.upper_bound,
+scorer = AdaptiveScorer()
+
+user_resource_usage = {}
+remaining_capacity = total_rating_capacity
+
+
+for feature in user_preferences:
+    try:
+        remaining_capacity, adjusted_rating = scorer.compute_resource_allocation(
+            property_id=feature,
+            usage_amount=user_preferences[feature],
+            allocation_parameters=allocation_parameters,
+            is_demand=True,
+            available_resources=remaining_capacity,
+            scale_factor=10
         )
+        user_resource_usage[feature] = user_preferences[feature]
+        print(f"{feature}: {adjusted_rating:.2f}, balance: {remaining_capacity:.2f}")
+    except ValueError as e:
+        print("Insufficient resources! Balance:", remaining_capacity)
+        break
 
-    def compute_real_estate_resource_usage(
-        self,
-        property_id: str,
-        weight: float,
-        learning_parameters: Dict[str, Tuple[float, float]],
-        is_demand: bool,
-        current_resources: float,
-    ) -> Tuple[float, float]:
-        return super().compute_resource_usage(
-            property_id,
-            weight,
-            learning_parameters,
-            is_demand,
-            current_resources,
-            self.scale_factor,
-        )
+property_scores = {}
 
 
-# Example usage
-real_estate_property_catalog = {
-    "feature_1": "Location",
-    "feature_2": "Size",
-    "feature_3": "Price",
-    "feature_4": "Condition",
-}
-
-real_estate_dict_1 = {
-    "feature_1": 0.7,
-    "feature_2": 0.8,
-    "feature_3": 0.9,
-}
-
-real_estate_dict_2 = {
-    "feature_1": 0.6,
-    "feature_2": 0.9,
-    "feature_3": 0.85,
-    "feature_4": 0.7,
-}
-
-real_estate_platform = RealEstatePlatform()
-
-complete_real_estate_dict_1 = real_estate_platform.create_real_estate_dict(
-    real_estate_property_catalog, real_estate_dict_1
-)
-complete_real_estate_dict_2 = real_estate_platform.create_real_estate_dict(
-    real_estate_property_catalog, real_estate_dict_2
-)
-print("Real Estate Platform Complete Dicts:")
-print(complete_real_estate_dict_1)
-print(complete_real_estate_dict_2)
-
-real_estate_score = real_estate_platform.compute_real_estate_score(
-    complete_real_estate_dict_1, complete_real_estate_dict_2
-)
-print(f"Real Estate Platform Score: {real_estate_score:.2f}%")
-
-
-# Resource Usage
-# ==============
-
-
-learning_parameters = {"feature_1": (0.4, 0.7)}
-current_resources = 100.0
-weight = 0.8
-property_id = "feature_1"
-is_demand = True
-
-try:
-    new_resources, cost = real_estate_platform.compute_real_estate_resource_usage(
-        property_id, weight, learning_parameters, is_demand, current_resources
+for property_name, features in property_listings.items():
+    property_scores[property_name] = scorer.compute_score(
+        scorer.create_complete_dict(allocation_parameters, user_resource_usage),
+        scorer.create_complete_dict(allocation_parameters, features)
     )
-    print(
-        f"Real Estate Platform - Remaining resources: {new_resources:.2f}, Assigned resource usage: {cost:.2f}"
-    )
-except ValueError as e:
-    print(f"Error: {e}")
+    print(f" {property_name}: {property_scores[property_name]:.2f}%")
+
+
+best_match_property = max(property_scores, key=property_scores.get)
+print(best_match_property)
